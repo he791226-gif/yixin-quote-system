@@ -65,8 +65,8 @@ if 'price_config' not in st.session_state:
 
 # --- 3. 側邊欄 (保留原樣) ---
 st.sidebar.title("🏢 翌新後台管理")
-customer_name = st.sidebar.text_input("客戶名稱", value="小太陽")
-contact_person = st.sidebar.text_input("聯絡人", value="肉圓")
+customer_name = st.sidebar.text_input("客戶名稱", value="")
+contact_person = st.sidebar.text_input("聯絡人", value="")
 
 with st.sidebar.expander("⚙️ 價格調整"):
     for name in sorted(st.session_state.price_config.keys()):
