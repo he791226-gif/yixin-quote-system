@@ -26,16 +26,16 @@ if 'cart' not in st.session_state:
 
 products = {
     "空壓機": [
-        ("5馬空壓機", "air_5.png"), ("10馬空壓機", "air_10.png"), ("20馬空壓機", "air_20.png"), 
-        ("30馬空壓機", "air_30.png"), ("50馬空壓機", "air_50.png"), ("75馬空壓機", "air_75.png"), ("100馬空壓機", "air_100.png")
+        ("5馬空壓機", "air_5.png"), ("10馬永磁變頻空壓機HCV-10PM-A", "air_10.png"), ("20馬永磁變頻空壓機HCV-20PM-A", "air_20.png"), 
+        ("30馬永磁變頻空壓機HCV-30PM-A", "air_30.png"), ("50馬永磁變頻空壓機HCV-50PM-A", "air_50.png"), ("750馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png")
     ],
     "儲氣筒": [
         ("105儲氣筒", "tank_105.png"), ("360儲氣筒", "tank_360.png"), ("660儲氣筒", "tank_660.png")
     ],
     "乾燥機": {
         "宙升": [
-            ("5馬宙升乾燥機", "zs_dryer_5.png"), ("10馬宙升乾燥機", "zs_dryer_10.png"), ("20馬宙升乾燥機", "zs_dryer_20.png"), 
-            ("30馬宙升乾燥機", "zs_dryer_30.png"), ("50馬宙升乾燥機", "zs_dryer_50.png"), ("100馬宙升乾燥機", "zs_dryer_100.png")
+            ("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("10馬宙升乾燥機SD-010	", "zs_dryer_10.png"), ("20馬宙升乾燥機SD-020", "zs_dryer_20.png"), 
+            ("30馬宙升乾燥機SD-030", "zs_dryer_30.png"), ("50馬宙升乾燥機SD-050", "zs_dryer_50.png"), ("100馬宙升乾燥機", "zs_dryer_100.png")
         ],
         "艾冷": [
             ("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png"), 
@@ -94,7 +94,7 @@ with tabs[2]:
     display_items(products["乾燥機"][brand])
 with tabs[3]: display_items(products["選配配件"])
 
-# --- 5. 報價清單與 EXCEL 輸出 (精確修改輸出位置) ---
+# --- 5. 報價清單與 EXCEL 輸出 (精確對位最終版) ---
 st.divider()
 if st.session_state.cart:
     st.subheader("📋 目前報價清單")
@@ -117,53 +117,56 @@ if st.session_state.cart:
         right_align = Alignment(horizontal='right', vertical='center')
         center_align = Alignment(horizontal='center', vertical='center')
 
-        # 【修正 1】徹底清空 H14, I15 以防殘留錯誤日期，並將正確日期填入 H15
-        ws['H14'] = ""
-        ws['I15'] = ""
-        ws['H15'] = datetime.now().strftime('%Y-%m-%d')
-        ws['H15'].font = bold_font
-        ws['H15'].alignment = Alignment(horizontal='left')
-
-        # 填入客戶資訊
+        # 1. 填入客戶資訊與日期 (H14 改為正確賦值)
         ws['B11'] = customer_name
         ws['B12'] = contact_person
+        
+        # 修正日期顯示，避免文字重複
+        ws['H14'] = f"估價日期：{datetime.now().strftime('%Y-%m-%d')}"
+        ws['H14'].font = bold_font
+        ws['H14'].alignment = Alignment(horizontal='left', vertical='center')
 
-        # 【修正 2】精確對照圖 2 欄位：NO(A), 品名(B), 數量(D), 單位(E), 金額(H)
+        # 2. 填入明細資料 (根據你的圖片 F, G, I 座標)
         for i, (name, qty) in enumerate(st.session_state.cart.items()):
             row = 17 + i
             price = st.session_state.price_config.get(name, 0)
             
-            # NO (A欄)
+            # NO (A 欄 = 1)
             ws.cell(row=row, column=1, value=i+1).font = bold_font
             
-            # 品名規格 (B欄)
+            # 品名規格 (B 欄 = 2)
             ws.cell(row=row, column=2, value=name).font = bold_font
             
-            # 數量 (D欄) - 置中
-            c_qty = ws.cell(row=row, column=4, value=qty)
-            c_qty.font = bold_font
-            c_qty.alignment = center_align
-            
-            # 單位 (E欄) - 置中
-            c_unit = ws.cell(row=row, column=5, value=unit_map.get(name, "台"))
+            # 單位 (對準 F 排 = 第 6 欄)
+            c_unit = ws.cell(row=row, column=6, value=unit_map.get(name, "台"))
             c_unit.font = bold_font
             c_unit.alignment = center_align
             
-            # 金額 (H欄) - 靠右
-            c_sub = ws.cell(row=row, column=8, value=price * qty)
+            # 數量 (對準 G 排 = 第 7 欄)
+            c_qty = ws.cell(row=row, column=7, value=qty)
+            c_qty.font = bold_font
+            c_qty.alignment = center_align
+
+            # 單價 (對準 H 排 = 第 8 欄)
+            c_price = ws.cell(row=row, column=8, value=price)
+            c_price.font = bold_font
+            c_price.alignment = right_align
+            
+            # 金額 (對準 I 排 = 第 9 欄)
+            c_sub = ws.cell(row=row, column=9, value=price * qty)
             c_sub.font = bold_font
             c_sub.alignment = right_align
 
-        # 【修正 3】總計位置 H36 靠右對齊
-        ws['H36'] = total_val
-        ws['H36'].font = Font(name='新細明體', size=12, bold=True)
-        ws['H36'].alignment = right_align
+        # 3. 合計金額修正 (對準 I36)
+        ws['I36'] = total_val
+        ws['I36'].font = Font(name='新細明體', size=12, bold=True)
+        ws['I36'].alignment = right_align
         
-        # 可選：合計字樣放在 G36
-        ws['G36'] = "合計"
-        ws['G36'].font = bold_font
-        ws['G36'].alignment = right_align
+        ws['H36'] = "合計："
+        ws['H36'].font = bold_font
+        ws['H36'].alignment = right_align
 
+        # 輸出檔案
         output = io.BytesIO()
         wb.save(output)
         st.download_button(label="📤 下載 翌新專業報價單 (Excel)", data=output.getvalue(), file_name=f"翌新報價_{customer_name}.xlsx")
