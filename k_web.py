@@ -9,6 +9,7 @@ from openpyxl.styles import Font, Alignment
 # --- 1. 頁面基本設定 (保留原樣) ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
 
+# 這裡加入了隱藏右上角選單與 GitHub 連結的 CSS
 st.markdown("""
     <style>
     .main { background-color: #f5f5f5; }
@@ -17,6 +18,15 @@ st.markdown("""
         background-color: white; padding: 20px; border-radius: 15px;
         border: 1px solid #ddd; min-height: 450px; text-align: center;
     }
+    
+    /* 隱藏頂部裝飾線、選單按鈕及 GitHub 圖標 */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stAppHeader {visibility: hidden;}
+    [data-testid="stStatusWidget"] {visibility: hidden;}
+    .st-emotion-cache-12fmues {display: none !important;} 
+    .st-emotion-cache-15zrgzn {display: none !important;}
     </style>
     """, unsafe_allow_html=True)
 
