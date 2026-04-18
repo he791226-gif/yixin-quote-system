@@ -19,7 +19,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. 產品規格介紹 ---
+# --- 2. 產品規格介紹 (名稱已對齊) ---
 product_specs = {
     "10馬力永磁變頻高效能補助專案型空壓機": (
         "型號:HCV-10PM-A\n馬力:1馬至10馬<隨壓力調整馬力>\n噪音:68±5\n"
@@ -28,7 +28,6 @@ product_specs = {
         "外型尺寸:745*680*910(mm)\n變頻器與電機一體化非外掛變頻空壓機\n"
         "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     ),
-    # 這裡的名稱必須改成跟 products 清單裡的一模一樣
     "20馬力永磁變頻高效能補助專案型空壓機": (
         "型號:HCV-20PM-AA\n馬力:2馬至20馬<隨壓力調整馬力>\n噪音:70±5\n"
         "電壓:三相220V\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n"
@@ -36,41 +35,37 @@ product_specs = {
         "外型尺寸:1060*825*1120(mm)\n變頻器與電機一體化非外掛變頻空壓機\n"
         "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     ),
-     # 這裡的名稱必須改成跟 products 清單裡的一模一樣
     "30馬力永磁變頻高效能補助專案型空壓機": (
         "型號:HCV-30PM-A\n馬力:3馬至30馬<隨壓力調整馬力>\n噪音:75±5\n"
         "電壓:三相220V\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n"
         "5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n"
-        "外型尺寸:1200*800*1280(mm)\n變頻器與電機一體化非外掛變頻空壓機\n"
+        "外型尺寸:1200*800*1280(mm)\n"
         "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     ),
-         # 這裡的名稱必須改成跟 products 清單裡的一模一樣
     "50馬力永磁變頻高效能補助專案型空壓機": (
         "型號:HCV-50PM-A\n馬力:5馬至50馬<隨壓力調整馬力>\n噪音:75±5\n"
         "電壓:三相220V\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n"
         "5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n"
-        "外型尺寸:1300*1000*1450(mm)\n變頻器與電機一體化非外掛變頻空壓機\n"
+        "外型尺寸:1300*1000*1450(mm)\n"
         "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     ),
-         # 這裡的名稱必須改成跟 products 清單裡的一模一樣
     "75馬力永磁變頻高效能補助專案型空壓機": (
         "型號:HCV-55PM-A\n馬力:10馬至75馬<隨壓力調整馬力>\n噪音:80±5\n"
         "電壓:三相220V\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n"
         "5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n"
-        "外型尺寸:1900*1340*1700(mm)\n變頻器與電機一體化非外掛變頻空壓機\n"
+        "外型尺寸:1900*1340*1700(mm)\n"
         "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     ),
-             # 這裡的名稱必須改成跟 products 清單裡的一模一樣
     "100馬力永磁變頻高效能補助專案型空壓機": (
-        "型號:HCV-50PM-A\n馬力:15馬至100馬<隨壓力調整馬力>\n噪音:82±5\n"
-        "電壓:三相220V\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n"
+        "型號:HCV-100PM-A\n馬力:15馬至100馬<隨壓力調整馬力>\n噪音:82±5\n"
+        "電壓:三相220V\nIE4永磁高效率馬達\n"
         "5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n"
-        "外型尺寸:2000*1340*1670(mm)\n變頻器與電機一體化非外掛變頻空壓機\n"
+        "外型尺寸:2000*1340*1670(mm)\n"
         "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     ),
 }
 
-# --- 3. 產品資料庫 (維持不變) ---
+# --- 3. 產品資料庫 (補齊乾燥機與配件) ---
 products = {
     "空壓機": {
         "HCV高端系列": [
@@ -82,17 +77,17 @@ products = {
     },
     "儲氣筒": [("155儲氣筒", "tank_105.png"), ("360儲氣筒", "tank_360.png"), ("660儲氣筒", "tank_660.png")],
     "乾燥機": {
-        "宙升": [("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("10馬宙升乾燥機SD-010", "zs_dryer_10.png")],
-        "艾冷": [("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png")]
+        "宙升": [("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("10馬宙升乾燥機SD-010", "zs_dryer_10.png"), ("15馬宙升乾燥機", "zs_dryer_15.png"), ("20馬宙升乾燥機", "zs_dryer_20.png")],
+        "艾冷": [("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png")]
     },
     "超精密過濾器組": {
         "合成牌": [("超精密過濾器組(合成牌)", "filter_com.png")],
         "PARK": [("超精密過濾器組(PARK)", "filter_park.png")]
     },
-    "選配配件": [("Ckd自動排水器", "drainer_ckd.png"), ("電子式自動排水器", "drainer_e.png")]
+    "選配配件": [("Ckd自動排水器", "drainer_ckd.png"), ("電子式自動排水器", "drainer_e.png"), ("手動排水閥", "drainer_m.png")]
 }
 
-unit_map = {"155儲氣筒": "只", "360儲氣筒": "只", "Ckd自動排水器": "只"}
+unit_map = {"155儲氣筒": "只", "360儲氣筒": "只", "660儲氣筒": "只", "Ckd自動排水器": "只"}
 
 if 'cart' not in st.session_state: st.session_state.cart = {}
 if 'price_config' not in st.session_state:
@@ -141,17 +136,15 @@ if st.session_state.cart:
             table_data.append([name, unit_map.get(name, "台"), qty, f"${p:,}", f"${sub:,}"])
         st.table(pd.DataFrame(table_data, columns=["品名及規格", "單位", "數量", "單價", "金額"]))
 
-    # --- 6. Excel 匯出邏輯 (處理字體與加粗) ---
+    # --- 6. Excel 匯出邏輯 ---
     template_path = "翌新估價單EXCELNEW.xlsx"
     if os.path.exists(template_path):
         wb = openpyxl.load_workbook(template_path)
         ws = wb.active
         
-        # 字體設定：標楷體 + 粗體
         bold_kai = Font(name='標楷體', size=12, bold=True)
         spec_kai = Font(name='標楷體', size=11, bold=True)
 
-        # 客戶與日期資訊
         ws['B11'] = customer_name
         ws['B11'].font = bold_kai
         ws['B12'] = contact_person
@@ -182,16 +175,15 @@ if st.session_state.cart:
             
             current_row += 1
 
-        # --- 關鍵修正：I36 加粗 ---
+        # --- I36 加粗 ---
         ws['I36'] = total_val
-        ws['I36'].font = bold_kai # 強制套用標楷體+粗體
+        ws['I36'].font = bold_kai 
         
         output = io.BytesIO()
         wb.save(output)
         
-        # 按鈕區 (含清空重選)
         c1, c2 = st.columns(2)
-        with c1: st.download_button("📤 下載標楷體報價單", data=output.getvalue(), file_name=f"報價_{customer_name}.xlsx", use_container_width=True)
+        with c1: st.download_button("📤 下載標楷體報價單", data=output.getvalue(), file_name=f"報價單_{customer_name}.xlsx", use_container_width=True)
         with c2:
             if st.button("🗑️ 清空重選", use_container_width=True):
                 st.session_state.cart = {}
