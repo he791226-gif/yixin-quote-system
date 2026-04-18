@@ -46,7 +46,7 @@ products = {
         "HCV高端系列": [
             ("10馬永磁變頻空壓機HCV-10PM-A", "air_10.png"), ("30馬永磁變頻空壓機HCV-30PM-A", "air_30.png"), 
             ("75馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), ("20馬永磁變頻空壓機HCV-20PM-A", "air_20.png"),
-            ("75馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png")
+            ("50馬永磁變頻空壓機HCV-50PM-A", "air_50.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png")
         ],
         "標準型": [
             ("5馬空壓機", "air_5.png"), ("air_mu.png", "air_mu.png")
