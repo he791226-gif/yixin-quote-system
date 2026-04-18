@@ -9,7 +9,7 @@ from openpyxl.styles import Font, Alignment
 # --- 1. 頁面基本設定 ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
 
-# CSS 修正：徹底清除所有官方雜項 (橘黃色圈起處)，並美化頁面按鈕
+# CSS 修正：徹底清除官方雜項（橘黃色圈起處），並美化排版
 st.markdown("""
     <style>
     .main { background-color: #f5f5f5; }
@@ -21,10 +21,10 @@ st.markdown("""
         visibility: hidden !important;
     }
     
-    /* 2. 隱藏側邊欄控制鈕 (既然不好用就直接藏掉) */
+    /* 2. 隱藏側邊欄控制鈕 */
     [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 
-    /* 產品展示卡片 */
+    /* 產品展示卡片優化 */
     [data-testid="stVerticalBlock"] > div:has(div.stImage) {
         background-color: white; padding: 20px; border-radius: 15px;
         border: 1px solid #ddd; min-height: 450px; text-align: center;
@@ -86,27 +86,7 @@ if 'price_config' not in st.session_state:
                 for name, _ in v: st.session_state.price_config[name] = 0
     init_prices(products)
 
-# --- 3. 核心修正：直接在頁面頂部做後台管理鈕 ---
-# 不再依賴側邊欄，直接用 popover 放在最顯眼的地方
-with st.popover("⚙️ 點此開啟後台管理 (修改客戶/價格/電壓)"):
-    st.subheader("🏢 客戶基本資料")
-    customer_name = st.text_input("客戶名稱", value="")
-    contact_person = st.text_input("聯絡人", value="")
-    
-    st.divider()
-    st.subheader("⚡ 電力與單價設定")
-    voltage = st.radio("電力規格 (Excel 輸出用)", ["220V", "380V"], horizontal=True)
-    
-    with st.expander("📝 調整所有品項單價"):
-        for name in sorted(st.session_state.price_config.keys()):
-            st.session_state.price_config[name] = st.number_input(f"{name}", value=st.session_state.price_config[name], step=100)
-
-# 為了讓後面 Excel 能讀到，設定預設值
-if 'customer_name' not in locals(): customer_name = ""
-if 'contact_person' not in locals(): contact_person = ""
-if 'voltage' not in locals(): voltage = "220V"
-
-# --- 4. 主展示介面 ---
+# --- 3. 主展示介面 ---
 st.title("請選擇設備類別")
 tabs = st.tabs(["空壓機", "儲氣筒", "乾燥機", "選配配件"])
 
@@ -130,21 +110,42 @@ with tabs[2]:
     display_items(products["乾燥機"][brand])
 with tabs[3]: display_items(products["選配配件"])
 
-# --- 5. 報價清單與 EXCEL 輸出 ---
+# --- 4. 報價清單與後台管理 (合併排版) ---
 st.divider()
 if st.session_state.cart:
-    st.subheader("📋 目前報價清單")
-    table_data = []
-    total_val = 0
-    for name, qty in st.session_state.cart.items():
-        p = st.session_state.price_config.get(name, 0)
-        sub = p * qty
-        total_val += sub
-        table_data.append([name, unit_map.get(name, "台"), qty, f"${p:,}", f"${sub:,}"])
-    
-    st.table(pd.DataFrame(table_data, columns=["品名及規格", "單位", "數量", "單價", "金額"]))
-    st.markdown(f"### <span class='price-text'>總計金額：${total_val:,} (電力：{voltage})</span>", unsafe_allow_html=True)
+    # 建立兩欄：左邊放清單，右邊放管理選單
+    col_list, col_admin = st.columns([2, 1])
 
+    with col_admin:
+        st.subheader("⚙️ 後台管理")
+        with st.popover("點此修改客戶與單價", use_container_width=True):
+            customer_name = st.text_input("客戶名稱", value="")
+            contact_person = st.text_input("聯絡人", value="")
+            st.divider()
+            voltage = st.radio("電力規格", ["220V", "380V"], horizontal=True)
+            with st.expander("📝 調整所有品項單價"):
+                for name in sorted(st.session_state.price_config.keys()):
+                    st.session_state.price_config[name] = st.number_input(f"{name}", value=st.session_state.price_config[name], step=100)
+    
+    # 確保變數有定義給 Excel 使用
+    if 'customer_name' not in locals(): customer_name = ""
+    if 'contact_person' not in locals(): contact_person = ""
+    if 'voltage' not in locals(): voltage = "220V"
+
+    with col_list:
+        st.subheader("📋 目前報價清單")
+        table_data = []
+        total_val = 0
+        for name, qty in st.session_state.cart.items():
+            p = st.session_state.price_config.get(name, 0)
+            sub = p * qty
+            total_val += sub
+            table_data.append([name, unit_map.get(name, "台"), qty, f"${p:,}", f"${sub:,}"])
+        
+        st.table(pd.DataFrame(table_data, columns=["品名及規格", "單位", "數量", "單價", "金額"]))
+        st.markdown(f"### <span class='price-text'>總計金額：${total_val:,} (電力：{voltage})</span>", unsafe_allow_html=True)
+
+    # --- 5. EXCEL 輸出 ---
     template_path = "翌新估價單EXCELNEW.xlsx"
     if os.path.exists(template_path):
         wb = openpyxl.load_workbook(template_path)
@@ -183,8 +184,12 @@ if st.session_state.cart:
 
         output = io.BytesIO()
         wb.save(output)
-        st.download_button(label="📤 下載 翌新專業報價單 (Excel)", data=output.getvalue(), file_name=f"翌新報價_{customer_name}.xlsx")
-
-    if st.button("🗑️ 清空重選"):
-        st.session_state.cart = {}
-        st.rerun()
+        
+        # 按鈕排在最下面
+        c1, c2 = st.columns(2)
+        with c1:
+            st.download_button(label="📤 下載 翌新專業報價單 (Excel)", data=output.getvalue(), file_name=f"翌新報價_{customer_name}.xlsx", use_container_width=True)
+        with c2:
+            if st.button("🗑️ 清空重選", use_container_width=True):
+                st.session_state.cart = {}
+                st.rerun()
