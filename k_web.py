@@ -9,45 +9,22 @@ from openpyxl.styles import Font, Alignment
 # --- 1. 頁面基本設定 ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
 
-# CSS 徹底修正：隱藏所有官方圖示 (橘黃色圈起處) 並建立自定義後台按鈕
+# CSS 修正：徹底清除所有官方雜項 (橘黃色圈起處)，並美化頁面按鈕
 st.markdown("""
     <style>
     .main { background-color: #f5f5f5; }
     .price-text { color: #E84118; font-size: 24px; font-weight: bold; }
     
-    /* 1. 徹底隱藏頂部裝飾、GitHub 連結、以及您圈起來的 Streamlit 官方元件 */
+    /* 1. 徹底清空 Streamlit 官方裝飾線與所有選單 (解決圈起處問題) */
     header, .stAppHeader, #MainMenu, footer, [data-testid="stDecoration"] {
-        visibility: hidden !important;
         display: none !important;
+        visibility: hidden !important;
     }
     
-    /* 2. 強制移除右側可能出現的官方按鈕群 */
-    [data-testid="stHeader"] { display: none !important; }
-    
-    /* 3. 自定義左上角「後台管理」浮動按鈕 (手機版專用解決方案) */
-    /* 我們利用側邊欄控制鈕重新包裝，確保它在最上層且可見 */
-    [data-testid="stSidebarCollapsedControl"] {
-        visibility: visible !important;
-        display: flex !important;
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        z-index: 999999 !important;
-        background-color: #E84118 !important; /* 翌新橘紅色 */
-        border-radius: 10px !important;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.3) !important;
-        width: 50px !important;
-        height: 50px !important;
-    }
-    
-    /* 讓按鈕內的圖示變白色，方便看清楚 */
-    [data-testid="stSidebarCollapsedControl"] button {
-        color: white !important;
-        width: 100% !important;
-        height: 100% !important;
-    }
+    /* 2. 隱藏側邊欄控制鈕 (既然不好用就直接藏掉) */
+    [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 
-    /* 卡片式產品展示優化 */
+    /* 產品展示卡片 */
     [data-testid="stVerticalBlock"] > div:has(div.stImage) {
         background-color: white; padding: 20px; border-radius: 15px;
         border: 1px solid #ddd; min-height: 450px; text-align: center;
@@ -55,14 +32,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. 產品資料庫與規格說明 ---
+# --- 2. 產品資料庫與規格 ---
 if 'cart' not in st.session_state:
     st.session_state.cart = {} 
 
 product_specs = {
     "10馬永磁變頻空壓機HCV-10PM-A": "HCV高端系列\n型號:HCV-10PM-A\n馬力:1馬至10馬<隨壓力調整馬力>\n噪音:68±5\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n外型尺寸:745*680*910(mm)\n變頻器與電機一體化非外掛變頻空壓機\n啟動電流衝擊小,恆壓恆溫控制,故障率低",
-    "20馬永磁變頻空壓機HCV-20PM-A": "HCV高端系列\n型號:HCV-20PM-A\n規格同高端系列，提供更強勁風量輸出",
-    "30馬永磁變頻空壓機HCV-30PM-A": "HCV高端系列\n型號:HCV-30PM-A\n適合中大型工廠，高效穩定"
+    "20馬永磁變頻空壓機HCV-20PM-A": "HCV高端系列\n型號:HCV-20PM-A\n規格同高端系列",
+    "30馬永磁變頻空壓機HCV-30PM-A": "HCV高端系列\n型號:HCV-30PM-A"
 }
 
 products = {
@@ -85,7 +62,7 @@ products = {
         ],
         "艾冷": [
             ("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png"), 
-            ("30馬艾冷乾燥機", "al_dryer_30.png"), ("50馬艾冷乾燥機", "al_dryer_50.png"), ("100馬艾冷乾燥機", "al_dryer_100.png")
+            ("30馬艾冷乾燥機", "al_dryer_30.png"), ("50馬艾冷乾燥機", "al_dryer_50.png"), ("100馬艾冷乾燥機", "al_dryer_10.png")
         ]
     },
     "選配配件": [
@@ -109,16 +86,25 @@ if 'price_config' not in st.session_state:
                 for name, _ in v: st.session_state.price_config[name] = 0
     init_prices(products)
 
-# --- 3. 側邊欄 (後台管理) ---
-st.sidebar.title("🏢 翌新後台管理")
-# 為了手機操作方便，這裡直接放輸入框，您可以透過點擊左上角「橘紅按鈕」開啟
-customer_name = st.sidebar.text_input("客戶名稱", value="")
-contact_person = st.sidebar.text_input("聯絡人", value="")
-voltage = st.sidebar.radio("電力規格", ["220V", "380V"], horizontal=True)
+# --- 3. 核心修正：直接在頁面頂部做後台管理鈕 ---
+# 不再依賴側邊欄，直接用 popover 放在最顯眼的地方
+with st.popover("⚙️ 點此開啟後台管理 (修改客戶/價格/電壓)"):
+    st.subheader("🏢 客戶基本資料")
+    customer_name = st.text_input("客戶名稱", value="")
+    contact_person = st.text_input("聯絡人", value="")
+    
+    st.divider()
+    st.subheader("⚡ 電力與單價設定")
+    voltage = st.radio("電力規格 (Excel 輸出用)", ["220V", "380V"], horizontal=True)
+    
+    with st.expander("📝 調整所有品項單價"):
+        for name in sorted(st.session_state.price_config.keys()):
+            st.session_state.price_config[name] = st.number_input(f"{name}", value=st.session_state.price_config[name], step=100)
 
-with st.sidebar.expander("📝 修改產品單價"):
-    for name in sorted(st.session_state.price_config.keys()):
-        st.session_state.price_config[name] = st.sidebar.number_input(f"{name}", value=st.session_state.price_config[name], step=100)
+# 為了讓後面 Excel 能讀到，設定預設值
+if 'customer_name' not in locals(): customer_name = ""
+if 'contact_person' not in locals(): contact_person = ""
+if 'voltage' not in locals(): voltage = "220V"
 
 # --- 4. 主展示介面 ---
 st.title("請選擇設備類別")
