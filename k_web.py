@@ -6,9 +6,8 @@ import os
 import openpyxl
 from openpyxl.styles import Font, Alignment
 
-# --- 1. 頁面設定 ---
+# --- 1. 頁面基本設定 (隱藏官方雜項) ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
-
 st.markdown("""
     <style>
     header, .stAppHeader, #MainMenu, footer, [data-testid="stDecoration"] {
@@ -20,13 +19,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. 產品規格介紹 ---
+# --- 2. 產品規格介紹 (標楷體規格) ---
 product_specs = {
     "10馬永磁變頻空壓機HCV-10PM-A": (
-        "型號:HCV-10PM-A | 噪音:68±5\n"
-        "電壓:三相220V | IE4永磁高效率馬達\n"
-        "5kg~8kg變頻壓力 | 恆壓恆溫控制\n"
-        "外型尺寸:745*680*910(mm)"
+        "型號:HCV-10PM-A\n"
+        "馬力:1馬至10馬<隨壓力調整馬力>\n"
+        "噪音:68±5\n"
+        "電壓:三相220V\n"
+        "IE4永磁高效率馬達<馬達無軸承><無皮帶>\n"
+        "5kg~8kg可選變頻壓力\n"
+        "LCD液晶顯示預警/警告/錯誤跳機保護\n"
+        "外型尺寸:745*680*910(mm)\n"
+        "變頻器與電機一體化非外掛變頻空壓機\n"
+        "啟動電流衝擊小,恆壓恆溫控制,故障率低"
     )
 }
 
@@ -68,7 +73,7 @@ def display_items(item_list):
         with cols[i % 3]:
             if os.path.exists(img): st.image(img, width=220)
             st.write(f"**{name}**")
-            if st.button(f"➕ 加入", key=f"btn_{name}"):
+            if st.button(f"➕ 加入報價單", key=f"btn_{name}"):
                 st.session_state.cart[name] = st.session_state.cart.get(name, 0) + 1
                 st.rerun()
 
@@ -78,7 +83,7 @@ with tabs[2]: display_items(products["乾燥機"][st.radio("品牌", ["宙升", 
 with tabs[3]: display_items(products["超精密過濾器組"][st.radio("品牌 ", ["合成牌", "PARK"], horizontal=True)])
 with tabs[4]: display_items(products["選配配件"])
 
-# --- 5. 報價清單與管理 ---
+# --- 5. 報價清單管理 ---
 st.divider()
 if st.session_state.cart:
     col_list, col_admin = st.columns([2, 1])
@@ -99,18 +104,19 @@ if st.session_state.cart:
             sub = p * qty
             total_val += sub
             table_data.append([name, unit_map.get(name, "台"), qty, f"${p:,}", f"${sub:,}"])
-        st.table(pd.DataFrame(table_data, columns=["品名", "單位", "數量", "單價", "金額"]))
+        st.table(pd.DataFrame(table_data, columns=["品名及規格", "單位", "數量", "單價", "金額"]))
 
-    # --- 6. Excel 匯出 (標楷體 + 粗體設定) ---
+    # --- 6. Excel 匯出邏輯 (處理擠在一起的問題) ---
     template_path = "翌新估價單EXCELNEW.xlsx"
     if os.path.exists(template_path):
         wb = openpyxl.load_workbook(template_path)
         ws = wb.active
         
-        # 強制字體設定
+        # 字體設定：標楷體 + 粗體
         bold_kai = Font(name='標楷體', size=12, bold=True)
-        spec_kai = Font(name='標楷體', size=10, bold=True)
+        spec_kai = Font(name='標楷體', size=11, bold=True)
 
+        # 客戶資訊
         ws['B11'] = customer_name
         ws['B11'].font = bold_kai
         ws['B12'] = contact_person
@@ -122,8 +128,10 @@ if st.session_state.cart:
         for i, (name, qty) in enumerate(st.session_state.cart.items()):
             p = st.session_state.price_config.get(name, 0)
             
-            # 寫入主要品項
+            # 主品項寫入
             ws.cell(row=current_row, column=1, value=i+1).font = bold_kai
+            # 合併 B 到 E 欄，給品項名稱更多空間
+            ws.merge_cells(start_row=current_row, start_column=2, end_row=current_row, end_column=5)
             name_cell = ws.cell(row=current_row, column=2, value=f"{name} ({voltage})")
             name_cell.font = bold_kai
             
@@ -131,13 +139,17 @@ if st.session_state.cart:
             ws.cell(row=current_row, column=8, value=p).font = bold_kai
             ws.cell(row=current_row, column=9, value=p * qty).font = bold_kai
             
-            # 寫入產品介紹 (調整行高與換行)
+            # 產品規格處置 (解決擠在一起、卡住的問題)
             if name in product_specs:
                 current_row += 1
+                # 重點：合併 B 到 F 欄讓規格可以橫向展開
+                ws.merge_cells(start_row=current_row, start_column=2, end_row=current_row, end_column=6)
                 spec_cell = ws.cell(row=current_row, column=2, value=product_specs[name])
                 spec_cell.font = spec_kai
-                spec_cell.alignment = Alignment(wrap_text=True, vertical='center')
-                ws.row_dimensions[current_row].height = 65 
+                # 設定靠左、垂直置中、自動換行
+                spec_cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
+                # 根據規格行數設定合理行高 (10馬大約10行，設定200~220較適中)
+                ws.row_dimensions[current_row].height = 200 
             
             current_row += 1
 
@@ -145,10 +157,9 @@ if st.session_state.cart:
         output = io.BytesIO()
         wb.save(output)
         
-        # 底部按鈕區 (補回清空重選)
+        # 下載與清空重選
         c1, c2 = st.columns(2)
-        with c1:
-            st.download_button("📤 下載 Excel 報價單", data=output.getvalue(), file_name=f"報價單_{customer_name}.xlsx", use_container_width=True)
+        with c1: st.download_button("📤 下載標楷體報價單", data=output.getvalue(), file_name=f"報價_{customer_name}.xlsx", use_container_width=True)
         with c2:
             if st.button("🗑️ 清空重選", use_container_width=True):
                 st.session_state.cart = {}
