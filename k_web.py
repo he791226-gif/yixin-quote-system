@@ -81,8 +81,8 @@ products = {
         "艾冷": [("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png")]
     },
     "超精密過濾器組": {
-        "合成牌": [("超精密過濾器組(合成牌)", "filter_com.png")],
-        "PARK": [("超精密過濾器組(PARK)", "filter_park.png")]
+        "合成牌": [("超精密過濾器組(合成牌)", "filter.png")],
+        "PARK": [("超精密過濾器組(PARK)", "filter.png")]
     },
     "選配配件": [("Ckd自動排水器", "drainer_ckd.png"), ("電子式自動排水器", "drainer_e.png"), ("手動排水閥", "drainer_m.png")]
 }
