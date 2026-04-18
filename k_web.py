@@ -19,13 +19,13 @@ st.markdown("""
         border: 1px solid #ddd; min-height: 450px; text-align: center;
     }
     
-    /* 1. 徹底隱藏頂部裝飾線與 GitHub 連結，確保程式碼不外流 */
+    /* 1. 徹底隱藏頂部裝飾線與 GitHub 連結 */
     header { visibility: hidden !important; }
     .stAppHeader { display: none !important; }
     #MainMenu { visibility: hidden !important; }
     footer { visibility: hidden !important; }
     
-    /* 2. 功能 2 修正：強制讓手機版側邊欄按鈕「浮」出來，解決縮小後找不到的問題 */
+    /* 2. 手機版側邊欄按鈕強制顯現 */
     [data-testid="stSidebarCollapsedControl"] {
         visibility: visible !important;
         display: flex !important;
@@ -41,36 +41,28 @@ st.markdown("""
         justify-content: center !important;
         align-items: center !important;
     }
-
-    /* 確保按鈕內的箭頭圖示是深色的，方便辨識點擊 */
-    [data-testid="stSidebarCollapsedControl"] button {
-        color: #333 !important;
-    }
+    [data-testid="stSidebarCollapsedControl"] button { color: #333 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. 產品資料庫與規格說明 (功能 4: 圖 1 文字要求) ---
+# --- 2. 產品資料庫與規格說明 ---
 if 'cart' not in st.session_state:
     st.session_state.cart = {} 
 
-# 圖 1 的規格文字說明庫 (當選購對應馬力時，自動在 Excel 插入)
 product_specs = {
     "10馬永磁變頻空壓機HCV-10PM-A": "HCV高端系列\n型號:HCV-10PM-A\n馬力:1馬至10馬<隨壓力調整馬力>\n噪音:68±5\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n外型尺寸:745*680*910(mm)\n變頻器與電機一體化非外掛變頻空壓機\n啟動電流衝擊小,恆壓恆溫控制,故障率低",
     "20馬永磁變頻空壓機HCV-20PM-A": "HCV高端系列\n型號:HCV-20PM-A\n規格同高端系列，提供更強勁風量輸出",
-    "30馬永磁變頻空壓機HCV-30PM-A": "HCV高端系列\n型號:HCV-30PM-A\n適合中大型工廠，高效穩定",
-    # 其他規格可依此格式繼續增加...
+    "30馬永磁變頻空壓機HCV-30PM-A": "HCV高端系列\n型號:HCV-30PM-A\n適合中大型工廠，高效穩定"
 }
 
 products = {
     "空壓機": {
         "HCV高端系列": [
-            ("10馬永磁變頻空壓機HCV-10PM-A", "air_10.png"), ("30馬永磁變頻空壓機HCV-30PM-A", "air_30.png"), 
-            ("75馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), ("20馬永磁變頻空壓機HCV-20PM-A", "air_20.png"),
-            ("50馬永磁變頻空壓機HCV-50PM-A", "air_50.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png")
+            ("10馬永磁變頻空壓機HCV-10PM-A", "air_10.png"), ("20馬永磁變頻空壓機HCV-20PM-A", "air_20.png"), 
+            ("30馬永磁變頻空壓機HCV-30PM-A", "air_30.png"), ("50馬永磁變頻空壓機HCV-50PM-A", "air_50.png"),
+            ("75馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png")
         ],
-        "標準型": [
-            ("5馬空壓機", "air_5.png")
-        ]
+        "標準型": [("5馬空壓機", "air_5.png")]
     },
     "儲氣筒": [
         ("105儲氣筒", "tank_105.png"), ("360儲氣筒", "tank_360.png"), ("660儲氣筒", "tank_660.png")
@@ -107,17 +99,22 @@ if 'price_config' not in st.session_state:
                 for name, _ in v: st.session_state.price_config[name] = 0
     init_prices(products)
 
-# --- 3. 側邊欄 (後台管理視窗) ---
-st.sidebar.title("🏢 翌新後台管理")
-customer_name = st.sidebar.text_input("客戶名稱", value="")
-contact_person = st.sidebar.text_input("聯絡人", value="")
+# --- 3. 側邊欄 (修改為按鈕觸發的選單) ---
+st.sidebar.title("🏢 翌新系統選單")
 
-# 功能 3: 增加電壓選擇
-voltage = st.sidebar.radio("電力規格 (輸出於Excel)", ["220V", "380V"], horizontal=True)
-
-with st.sidebar.expander("⚙️ 價格調整"):
-    for name in sorted(st.session_state.price_config.keys()):
-        st.session_state.price_config[name] = st.sidebar.number_input(f"{name} 單價", value=st.session_state.price_config[name], step=100)
+# 使用 popover 將所有管理功能包成一顆按鈕
+with st.sidebar.popover("⚙️ 開啟後台管理"):
+    st.subheader("客戶資訊")
+    customer_name = st.text_input("客戶名稱", value="")
+    contact_person = st.text_input("聯絡人", value="")
+    
+    st.divider()
+    st.subheader("電力與價格")
+    voltage = st.radio("電力規格 (輸出於Excel)", ["220V", "380V"], horizontal=True)
+    
+    with st.expander("📝 調整各品項單價"):
+        for name in sorted(st.session_state.price_config.keys()):
+            st.session_state.price_config[name] = st.number_input(f"{name} 單價", value=st.session_state.price_config[name], step=100)
 
 # --- 4. 主展示介面 ---
 st.title("請選擇設備類別")
@@ -135,7 +132,6 @@ def display_items(item_list):
                 st.toast(f"已加入: {name}")
 
 with tabs[0]:
-    # 功能 1: 空壓機分頁選擇
     air_type = st.radio("選擇類型", ["HCV高端系列", "標準型"], horizontal=True)
     display_items(products["空壓機"][air_type])
 with tabs[1]: display_items(products["儲氣筒"])
@@ -169,7 +165,6 @@ if st.session_state.cart:
         center_align = Alignment(horizontal='center', vertical='center')
         top_left_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
 
-        # 填入基本資訊
         ws['B11'] = customer_name
         ws['B12'] = contact_person
         ws['H14'] = f"估價日期：{datetime.now().strftime('%Y-%m-%d')}"
@@ -177,8 +172,6 @@ if st.session_state.cart:
         current_row = 17
         for i, (name, qty) in enumerate(st.session_state.cart.items()):
             price = st.session_state.price_config.get(name, 0)
-            
-            # 品名(含電壓)、單位、數量、單價、金額
             ws.cell(row=current_row, column=1, value=i+1).font = bold_font
             ws.cell(row=current_row, column=2, value=f"{name} ({voltage})").font = bold_font
             ws.cell(row=current_row, column=6, value=unit_map.get(name, "台")).alignment = center_align
@@ -186,17 +179,15 @@ if st.session_state.cart:
             ws.cell(row=current_row, column=8, value=price).alignment = right_align
             ws.cell(row=current_row, column=9, value=price * qty).alignment = right_align
             
-            # 功能 4: 插入產品說明 (例如 10馬永磁變頻...)
             if name in product_specs:
                 current_row += 1
                 spec_cell = ws.cell(row=current_row, column=2, value=product_specs[name])
                 spec_cell.font = spec_font
                 spec_cell.alignment = top_left_align
-                ws.row_dimensions[current_row].height = 160 # 足夠容納多行文字
+                ws.row_dimensions[current_row].height = 160 
             
             current_row += 1
 
-        # 合計與底部標籤 (對應您的模板位置)
         ws['I36'] = total_val
         ws['H36'] = "合計："
 
