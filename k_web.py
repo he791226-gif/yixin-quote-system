@@ -9,22 +9,22 @@ from openpyxl.styles import Font, Alignment
 # --- 1. 頁面基本設定 ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
 
-# CSS 修正：徹底清除官方雜項（橘黃色圈起處），並美化排版
+# CSS 修正：徹底隱藏官方雜項與裝飾線
 st.markdown("""
     <style>
     .main { background-color: #f5f5f5; }
     .price-text { color: #E84118; font-size: 24px; font-weight: bold; }
     
-    /* 1. 徹底清空 Streamlit 官方裝飾線與所有選單 (解決圈起處問題) */
+    /* 徹底隱藏頂部裝飾、選單與官方圖標 */
     header, .stAppHeader, #MainMenu, footer, [data-testid="stDecoration"] {
         display: none !important;
         visibility: hidden !important;
     }
     
-    /* 2. 隱藏側邊欄控制鈕 */
+    /* 隱藏側邊欄控制鈕 */
     [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 
-    /* 產品展示卡片優化 */
+    /* 產品展示卡片美化 */
     [data-testid="stVerticalBlock"] > div:has(div.stImage) {
         background-color: white; padding: 20px; border-radius: 15px;
         border: 1px solid #ddd; min-height: 450px; text-align: center;
@@ -42,6 +42,7 @@ product_specs = {
     "30馬永磁變頻空壓機HCV-30PM-A": "HCV高端系列\n型號:HCV-30PM-A"
 }
 
+# 重新定義產品結構
 products = {
     "空壓機": {
         "HCV高端系列": [
@@ -62,21 +63,26 @@ products = {
         ],
         "艾冷": [
             ("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png"), 
-            ("30馬艾冷乾燥機", "al_dryer_30.png"), ("50馬艾冷乾燥機", "al_dryer_50.png"), ("100馬艾冷乾燥機", "al_dryer_10.png")
+            ("30馬艾冷乾燥機", "al_dryer_30.png"), ("50馬艾冷乾燥機", "al_dryer_50.png"), ("100馬艾冷乾燥機", "al_dryer_100.png")
         ]
+    },
+    "超精密過濾器組": {
+        "合成牌": [("超精密過濾器組(合成牌)", "filter_com.png")],
+        "PARK": [("超精密過濾器組(PARK)", "filter_park.png")]
     },
     "選配配件": [
         ("Ckd自動排水器", "drainer_ckd.png"), ("電子式自動排水器", "drainer_e.png"), 
-        ("前置旋風分離器", "separator.png"), ("超精密過濾器組", "filter.png"), ("超精密過濾器芯", "filter_core.png")
+        ("前置旋風分離器", "separator.png"), ("超精密過濾器芯", "filter_core.png")
     ]
 }
 
 unit_map = {
     "105儲氣筒": "只", "360儲氣筒": "只", "660儲氣筒": "只",
     "Ckd自動排水器": "只", "電子式自動排水器": "只", "前置旋風分離器": "只",
-    "超精密過濾器組": "只", "超精密過濾器芯": "只"
+    "超精密過濾器組(合成牌)": "只", "超精密過濾器組(PARK)": "只", "超精密過濾器芯": "只"
 }
 
+# 初始化價格設定
 if 'price_config' not in st.session_state:
     st.session_state.price_config = {}
     def init_prices(d):
@@ -86,9 +92,9 @@ if 'price_config' not in st.session_state:
                 for name, _ in v: st.session_state.price_config[name] = 0
     init_prices(products)
 
-# --- 3. 主展示介面 ---
+# --- 3. 主展示介面 (重新排列 Tabs) ---
 st.title("請選擇設備類別")
-tabs = st.tabs(["空壓機", "儲氣筒", "乾燥機", "選配配件"])
+tabs = st.tabs(["空壓機", "儲氣筒", "乾燥機", "超精密過濾器組", "選配配件"])
 
 def display_items(item_list):
     cols = st.columns(3)
@@ -102,18 +108,20 @@ def display_items(item_list):
                 st.toast(f"已加入: {name}")
 
 with tabs[0]:
-    air_type = st.radio("選擇類型", ["HCV高端系列", "標準型"], horizontal=True)
+    air_type = st.radio("選擇空壓機類型", ["HCV高端系列", "標準型"], horizontal=True)
     display_items(products["空壓機"][air_type])
 with tabs[1]: display_items(products["儲氣筒"])
 with tabs[2]:
-    brand = st.radio("選擇品牌", ["宙升", "艾冷"], horizontal=True)
+    brand = st.radio("選擇乾燥機品牌", ["宙升", "艾冷"], horizontal=True)
     display_items(products["乾燥機"][brand])
-with tabs[3]: display_items(products["選配配件"])
+with tabs[3]:
+    filter_brand = st.radio("選擇過濾器品牌", ["合成牌", "PARK"], horizontal=True)
+    display_items(products["超精密過濾器組"][filter_brand])
+with tabs[4]: display_items(products["選配配件"])
 
-# --- 4. 報價清單與後台管理 (合併排版) ---
+# --- 4. 報價清單與管理面板 ---
 st.divider()
 if st.session_state.cart:
-    # 建立兩欄：左邊放清單，右邊放管理選單
     col_list, col_admin = st.columns([2, 1])
 
     with col_admin:
@@ -127,7 +135,6 @@ if st.session_state.cart:
                 for name in sorted(st.session_state.price_config.keys()):
                     st.session_state.price_config[name] = st.number_input(f"{name}", value=st.session_state.price_config[name], step=100)
     
-    # 確保變數有定義給 Excel 使用
     if 'customer_name' not in locals(): customer_name = ""
     if 'contact_person' not in locals(): contact_person = ""
     if 'voltage' not in locals(): voltage = "220V"
@@ -185,7 +192,6 @@ if st.session_state.cart:
         output = io.BytesIO()
         wb.save(output)
         
-        # 按鈕排在最下面
         c1, c2 = st.columns(2)
         with c1:
             st.download_button(label="📤 下載 翌新專業報價單 (Excel)", data=output.getvalue(), file_name=f"翌新報價_{customer_name}.xlsx", use_container_width=True)
