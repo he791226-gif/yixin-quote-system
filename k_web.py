@@ -6,10 +6,10 @@ import os
 import openpyxl
 from openpyxl.styles import Font, Alignment
 
-# --- 1. 頁面基本設定 (保留原樣) ---
+# --- 1. 頁面基本設定 ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
 
-# 這裡加入了隱藏右上角選單與 GitHub 連結的 CSS
+# CSS 修正：保留隱藏功能，但修復手機版選單按鈕不見的問題
 st.markdown("""
     <style>
     .main { background-color: #f5f5f5; }
@@ -19,37 +19,51 @@ st.markdown("""
         border: 1px solid #ddd; min-height: 450px; text-align: center;
     }
     
-    /* 隱藏頂部裝飾線、選單按鈕及 GitHub 圖標 */
-    header {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stAppHeader {visibility: hidden;}
-    [data-testid="stStatusWidget"] {visibility: hidden;}
-    .st-emotion-cache-12fmues {display: none !important;} 
-    .st-emotion-cache-15zrgzn {display: none !important;}
+    /* 隱藏頂部裝飾，但保留手機版漢堡選單按鈕 */
+    header { visibility: hidden; }
+    .stAppHeader { visibility: hidden; }
+    [data-testid="stHeader"] { visibility: visible !important; background: transparent; } 
+    [data-testid="stToolbar"] { visibility: hidden; }
+    
+    /* 修復隱藏選單後手機端無法點擊的問題 */
+    button[kind="header"] { visibility: visible !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. 完整產品資料庫 (嚴格保留，絕不刪減) ---
+# --- 2. 產品資料庫與規格說明 (包含圖1要求之文字) ---
 if 'cart' not in st.session_state:
     st.session_state.cart = {} 
 
+# 產品規格文字庫 (根據圖1及產品特性)
+product_specs = {
+    "10馬永磁變頻空壓機HCV-10PM-A": "HCV高端系列\n型號:HCV-10PM-A\n馬力:1馬至10馬<隨壓力調整馬力>\n噪音:68±5\nIE4永磁高效率馬達<馬達無軸承><無皮帶>\n5kg~8kg可選變頻壓力\nLCD液晶顯示預警/警告/錯誤跳機保護\n外型尺寸:745*680*910(mm)\n變頻器與電機一體化非外掛變頻空壓機\n啟動電流衝擊小,恆壓恆溫控制,故障率低",
+    "5馬空壓機": "標準型高效能空壓機\n穩定風壓輸出\n適合小型加工廠與維修站",
+    # 可依此類推增加乾燥機、儲氣筒之說明...
+}
+
 products = {
-    "空壓機": [
-        ("5馬空壓機", "air_5.png"), ("30馬永磁變頻空壓機HCV-30PM-A", "air_30.png"), ("75馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), 
-        ("10馬永磁變頻空壓機HCV-10PM-A", "air_10.png"), ("50馬永磁變頻空壓機HCV-50PM-A", "air_50.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png"), ("20馬永磁變頻空壓機HCV-20PM-A", "air_20.png")
-    ],
+    "空壓機": {
+        "HCV高端系列": [
+            ("10馬永磁變頻空壓機HCV-10PM-A", "air_10.png"), ("20馬永磁變頻空壓機HCV-20PM-A", "air_20.png"), 
+            ("30馬永磁變頻空壓機HCV-30PM-A", "air_30.png"), ("50馬永磁變頻空壓機HCV-50PM-A", "air_50.png"),
+            ("75馬永磁變頻空壓機HCV-75PM-A", "air_75.png"), ("100馬永磁變頻空壓機HCV-100PM-A", "air_100.png")
+        ],
+        "標準型": [
+            ("5馬空壓機", "air_5.png"), ("air_mu.png", "air_mu.png")
+        ]
+    },
     "儲氣筒": [
         ("105儲氣筒", "tank_105.png"), ("360儲氣筒", "tank_360.png"), ("660儲氣筒", "tank_660.png")
     ],
     "乾燥機": {
         "宙升": [
-            ("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("20馬宙升乾燥機SD-020	", "zs_dryer_20.png"), ("50馬宙升乾燥機SD-050", "zs_dryer_50.png"), 
-            ("10馬宙升乾燥機SD-010", "zs_dryer_10.png"), ("30馬宙升乾燥機SD-030", "zs_dryer_30.png"), ("100馬宙升乾燥機", "zs_dryer_100.png")
+            ("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("10馬宙升乾燥機SD-010", "zs_dryer_10.png"),
+            ("20馬宙升乾燥機SD-020", "zs_dryer_20.png"), ("30馬宙升乾燥機SD-030", "zs_dryer_30.png"), 
+            ("50馬宙升乾燥機SD-050", "zs_dryer_50.png"), ("100馬宙升乾燥機", "zs_dryer_100.png")
         ],
         "艾冷": [
             ("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png"), 
-            ("30馬艾冷乾燥機", "al_dryer_30.png"), ("50馬艾冷乾燥機", "al_dryer_50.png"), ("100馬艾冷乾燥機", "al_dryer_100.png")
+            ("30馬艾冷乾燥機", "al_dryer_30.png"), ("50馬艾冷乾燥機", "al_dryer_50.png"), ("100馬艾冷乾燥機", "al_dryer_10.png")
         ]
     },
     "選配配件": [
@@ -66,23 +80,27 @@ unit_map = {
 
 if 'price_config' not in st.session_state:
     st.session_state.price_config = {}
-    for cat, items in products.items():
-        if isinstance(items, dict):
-            for sub in items.values():
-                for name, _ in sub: st.session_state.price_config[name] = 0
-        else:
-            for name, _ in items: st.session_state.price_config[name] = 0
+    # 初始化價格 (包含嵌套字典處理)
+    def init_prices(d):
+        for k, v in d.items():
+            if isinstance(v, dict): init_prices(v)
+            elif isinstance(v, list):
+                for name, _ in v: st.session_state.price_config[name] = 0
+    init_prices(products)
 
-# --- 3. 側邊欄 (保留原樣) ---
+# --- 3. 側邊欄 ---
 st.sidebar.title("🏢 翌新後台管理")
 customer_name = st.sidebar.text_input("客戶名稱", value="")
 contact_person = st.sidebar.text_input("聯絡人", value="")
+
+# 功能 3: 增加電壓選擇
+voltage = st.sidebar.radio("電力規格", ["220V", "380V"], horizontal=True)
 
 with st.sidebar.expander("⚙️ 價格調整"):
     for name in sorted(st.session_state.price_config.keys()):
         st.session_state.price_config[name] = st.sidebar.number_input(f"{name} 單價", value=st.session_state.price_config[name])
 
-# --- 4. 主展示介面 (保留原樣) ---
+# --- 4. 主展示介面 ---
 st.title("請選擇設備類別")
 tabs = st.tabs(["空壓機", "儲氣筒", "乾燥機", "選配配件"])
 
@@ -97,14 +115,17 @@ def display_items(item_list):
                 st.session_state.cart[name] = st.session_state.cart.get(name, 0) + 1
                 st.toast(f"已加入: {name}")
 
-with tabs[0]: display_items(products["空壓機"])
+with tabs[0]:
+    # 功能 1: 空壓機增加子選項
+    air_type = st.radio("選擇類型", ["HCV高端系列", "標準型"], horizontal=True)
+    display_items(products["空壓機"][air_type])
 with tabs[1]: display_items(products["儲氣筒"])
 with tabs[2]:
     brand = st.radio("選擇品牌", ["宙升", "艾冷"], horizontal=True)
     display_items(products["乾燥機"][brand])
 with tabs[3]: display_items(products["選配配件"])
 
-# --- 5. 報價清單與 EXCEL 輸出 (精確對位最終版) ---
+# --- 5. 報價清單與 EXCEL 輸出 ---
 st.divider()
 if st.session_state.cart:
     st.subheader("📋 目前報價清單")
@@ -117,6 +138,7 @@ if st.session_state.cart:
         table_data.append([name, unit_map.get(name, "台"), qty, f"${p:,}", f"${sub:,}"])
     
     st.table(pd.DataFrame(table_data, columns=["品名及規格", "單位", "數量", "單價", "金額"]))
+    st.write(f"**目前選擇電力：{voltage}**")
     st.markdown(f"### <span class='price-text'>總計金額：${total_val:,}</span>", unsafe_allow_html=True)
 
     template_path = "翌新估價單EXCELNEW.xlsx"
@@ -124,59 +146,44 @@ if st.session_state.cart:
         wb = openpyxl.load_workbook(template_path)
         ws = wb.active
         bold_font = Font(name='新細明體', size=11, bold=True)
+        spec_font = Font(name='新細明體', size=10)
         right_align = Alignment(horizontal='right', vertical='center')
         center_align = Alignment(horizontal='center', vertical='center')
+        top_left_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
 
-        # 1. 填入客戶資訊與日期 (H14 改為正確賦值)
+        # 1. 填入客戶資訊與日期
         ws['B11'] = customer_name
         ws['B12'] = contact_person
-        
-        # 修正日期顯示，避免文字重複
         ws['H14'] = f"估價日期：{datetime.now().strftime('%Y-%m-%d')}"
-        ws['H14'].font = bold_font
-        ws['H14'].alignment = Alignment(horizontal='left', vertical='center')
-
-        # 2. 填入明細資料 (根據你的圖片 F, G, I 座標)
+        
+        # 2. 填入明細與功能 4 的規格文字
+        current_row = 17
         for i, (name, qty) in enumerate(st.session_state.cart.items()):
-            row = 17 + i
             price = st.session_state.price_config.get(name, 0)
             
-            # NO (A 欄 = 1)
-            ws.cell(row=row, column=1, value=i+1).font = bold_font
+            # NO, 品名, 單位, 數量, 單價, 金額
+            ws.cell(row=current_row, column=1, value=i+1).font = bold_font
+            ws.cell(row=current_row, column=2, value=f"{name} ({voltage})").font = bold_font
+            ws.cell(row=current_row, column=6, value=unit_map.get(name, "台")).alignment = center_align
+            ws.cell(row=current_row, column=7, value=qty).alignment = center_align
+            ws.cell(row=current_row, column=8, value=price).alignment = right_align
+            ws.cell(row=current_row, column=9, value=price * qty).alignment = right_align
             
-            # 品名規格 (B 欄 = 2)
-            ws.cell(row=row, column=2, value=name).font = bold_font
+            # 功能 4: 在品名下方插入規格文字說明
+            if name in product_specs:
+                current_row += 1
+                spec_cell = ws.cell(row=current_row, column=2, value=product_specs[name])
+                spec_cell.font = spec_font
+                spec_cell.alignment = top_left_align
+                # 調整列高以容納文字
+                ws.row_dimensions[current_row].height = 150 
             
-            # 單位 (對準 F 排 = 第 6 欄)
-            c_unit = ws.cell(row=row, column=6, value=unit_map.get(name, "台"))
-            c_unit.font = bold_font
-            c_unit.alignment = center_align
-            
-            # 數量 (對準 G 排 = 第 7 欄)
-            c_qty = ws.cell(row=row, column=7, value=qty)
-            c_qty.font = bold_font
-            c_qty.alignment = center_align
+            current_row += 1
 
-            # 單價 (對準 H 排 = 第 8 欄)
-            c_price = ws.cell(row=row, column=8, value=price)
-            c_price.font = bold_font
-            c_price.alignment = right_align
-            
-            # 金額 (對準 I 排 = 第 9 欄)
-            c_sub = ws.cell(row=row, column=9, value=price * qty)
-            c_sub.font = bold_font
-            c_sub.alignment = right_align
-
-        # 3. 合計金額修正 (對準 I36)
+        # 3. 合計金額 (對準 I36 或動態計算)
         ws['I36'] = total_val
-        ws['I36'].font = Font(name='新細明體', size=12, bold=True)
-        ws['I36'].alignment = right_align
-        
         ws['H36'] = "合計："
-        ws['H36'].font = bold_font
-        ws['H36'].alignment = right_align
 
-        # 輸出檔案
         output = io.BytesIO()
         wb.save(output)
         st.download_button(label="📤 下載 翌新專業報價單 (Excel)", data=output.getvalue(), file_name=f"翌新報價_{customer_name}.xlsx")
