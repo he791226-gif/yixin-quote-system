@@ -6,7 +6,7 @@ import os
 import openpyxl
 from openpyxl.styles import Font, Alignment
 
-# --- 1. 頁面基本設定 (隱藏官方雜項) ---
+# --- 1. 頁面基本設定 ---
 st.set_page_config(page_title="翌新空壓機報價系統", layout="wide")
 st.markdown("""
     <style>
@@ -19,7 +19,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. 產品規格介紹 (標楷體規格) ---
+# --- 2. 產品規格介紹 ---
 product_specs = {
     "10馬永磁變頻空壓機HCV-10PM-A": (
         "型號:HCV-10PM-A\n"
@@ -35,7 +35,7 @@ product_specs = {
     )
 }
 
-# --- 3. 完整產品清單 ---
+# --- 3. 產品資料庫 (維持不變) ---
 products = {
     "空壓機": {
         "HCV高端系列": [
@@ -106,7 +106,7 @@ if st.session_state.cart:
             table_data.append([name, unit_map.get(name, "台"), qty, f"${p:,}", f"${sub:,}"])
         st.table(pd.DataFrame(table_data, columns=["品名及規格", "單位", "數量", "單價", "金額"]))
 
-    # --- 6. Excel 匯出邏輯 (處理擠在一起的問題) ---
+    # --- 6. Excel 匯出邏輯 (處理字體與加粗) ---
     template_path = "翌新估價單EXCELNEW.xlsx"
     if os.path.exists(template_path):
         wb = openpyxl.load_workbook(template_path)
@@ -116,7 +116,7 @@ if st.session_state.cart:
         bold_kai = Font(name='標楷體', size=12, bold=True)
         spec_kai = Font(name='標楷體', size=11, bold=True)
 
-        # 客戶資訊
+        # 客戶與日期資訊
         ws['B11'] = customer_name
         ws['B11'].font = bold_kai
         ws['B12'] = contact_person
@@ -128,9 +128,7 @@ if st.session_state.cart:
         for i, (name, qty) in enumerate(st.session_state.cart.items()):
             p = st.session_state.price_config.get(name, 0)
             
-            # 主品項寫入
             ws.cell(row=current_row, column=1, value=i+1).font = bold_kai
-            # 合併 B 到 E 欄，給品項名稱更多空間
             ws.merge_cells(start_row=current_row, start_column=2, end_row=current_row, end_column=5)
             name_cell = ws.cell(row=current_row, column=2, value=f"{name} ({voltage})")
             name_cell.font = bold_kai
@@ -139,25 +137,24 @@ if st.session_state.cart:
             ws.cell(row=current_row, column=8, value=p).font = bold_kai
             ws.cell(row=current_row, column=9, value=p * qty).font = bold_kai
             
-            # 產品規格處置 (解決擠在一起、卡住的問題)
             if name in product_specs:
                 current_row += 1
-                # 重點：合併 B 到 F 欄讓規格可以橫向展開
                 ws.merge_cells(start_row=current_row, start_column=2, end_row=current_row, end_column=6)
                 spec_cell = ws.cell(row=current_row, column=2, value=product_specs[name])
                 spec_cell.font = spec_kai
-                # 設定靠左、垂直置中、自動換行
                 spec_cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
-                # 根據規格行數設定合理行高 (10馬大約10行，設定200~220較適中)
-                ws.row_dimensions[current_row].height = 200 
+                ws.row_dimensions[current_row].height = 200 # 維持 10 馬規格高度
             
             current_row += 1
 
+        # --- 關鍵修正：I36 加粗 ---
         ws['I36'] = total_val
+        ws['I36'].font = bold_kai # 強制套用標楷體+粗體
+        
         output = io.BytesIO()
         wb.save(output)
         
-        # 下載與清空重選
+        # 按鈕區 (含清空重選)
         c1, c2 = st.columns(2)
         with c1: st.download_button("📤 下載標楷體報價單", data=output.getvalue(), file_name=f"報價_{customer_name}.xlsx", use_container_width=True)
         with c2:
