@@ -44,8 +44,8 @@ products = {
     ],
     "乾燥機": {
         "宙升": [
-            ("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("10馬宙升乾燥機SD-010	", "zs_dryer_10.png"), ("20馬宙升乾燥機SD-020", "zs_dryer_20.png"), 
-            ("30馬宙升乾燥機SD-030", "zs_dryer_30.png"), ("50馬宙升乾燥機SD-050", "zs_dryer_50.png"), ("100馬宙升乾燥機", "zs_dryer_100.png")
+            ("5馬宙升乾燥機SD-005", "zs_dryer_5.png"), ("30馬宙升乾燥機SD-030	", "zs_dryer_30.png"), ("20馬宙升乾燥機SD-020", "zs_dryer_20.png"), 
+            ("10馬宙升乾燥機SD-010", "zs_dryer_10.png"), ("50馬宙升乾燥機SD-050", "zs_dryer_50.png"), ("100馬宙升乾燥機", "zs_dryer_100.png")
         ],
         "艾冷": [
             ("5馬艾冷乾燥機", "al_dryer_5.png"), ("10馬艾冷乾燥機", "al_dryer_10.png"), ("20馬艾冷乾燥機", "al_dryer_20.png"), 
