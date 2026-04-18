@@ -86,7 +86,7 @@ products = {
     },
     "超精密過濾器組": {
         "合成牌": [("超精密過濾器組(合成牌)", "filter.png")],
-        "PARK": [("超精密過濾器組(PARK)", "filter.png")]
+        "PARK": [("超精密過濾器組(PARK)", "PARK.png")]
     },
     "選配配件": [("Ckd自動排水器", "drainer_ckd.png"), ("電子式自動排水器", "drainer_e.png"),("過濾器濾心", "filter_core.png"),("旋風分離器", "separator.png")]
 }
